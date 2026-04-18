@@ -1,19 +1,14 @@
+require('dotenv').config(); // এটি .env ফাইল পড়তে সাহায্য করে
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
 const app = express();
 app.use(express.json());
+app.use(cors({ origin: '*' }));
 
-// CORS কনফিগারেশন - এটি তোমার ওয়েবসাইটকে ডাটা নেওয়ার অনুমতি দেবে
-app.use(cors({
-    origin: '*', 
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type']
-}));
-
-// Database Connection
-const mongoURI = "mongodb+srv://Admin:MdAsifulIslam9901@zenvygo.4munqqp.mongodb.net/?appName=Zenvygo"; 
+// সরাসরি লিঙ্ক না দিয়ে .env থেকে কল করা হচ্ছে
+const mongoURI = process.env.MONGO_URI; 
 
 mongoose.connect(mongoURI)
     .then(() => console.log("Zenvygo Database Connected"))
@@ -28,29 +23,16 @@ const Product = mongoose.model('Product', new mongoose.Schema({
     description: String
 }));
 
-// API Routes
 app.get('/api/products', async (req, res) => {
     try {
         const products = await Product.find();
-        res.status(200).json(products);
+        res.json(products);
     } catch (err) {
         res.status(500).json({ message: "Server Error" });
     }
 });
 
-app.post('/api/products', async (req, res) => {
-    try {
-        const newProduct = new Product(req.body);
-        await newProduct.save();
-        res.status(201).json({ message: "Product Added Successfully!" });
-    } catch (err) {
-        res.status(500).json({ message: "Error adding product" });
-    }
-});
-
-app.get('/', (req, res) => {
-    res.send("Zenvygo Backend Server is Running!");
-});
+app.get('/', (req, res) => res.send("Zenvygo Backend is Running!"));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
